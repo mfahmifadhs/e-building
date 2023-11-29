@@ -1,21 +1,22 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\Pegawai;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UnitKerja;
 use App\Models\Role;
 use App\Models\Status;
-use App\Models\User;
+use App\Models\Pegawai;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index ()
     {
         $user = User::get();
-        return view ('pages.user.show', compact('user'));
+        return response()->json([ 'success' => true, 'user' => $user ], 200);
     }
 
     public function create()
@@ -23,7 +24,13 @@ class UserController extends Controller
         $role    = Role::get();
         $pegawai = Pegawai::get();
         $status  = Status::get();
-        return view ('pages.user.create', compact('role','pegawai','status'));
+
+        return response()->json([
+            'success' => true,
+            'role' => $role,
+            'pegawai' => $pegawai,
+            'status' => $status
+        ], 200);
     }
 
     public function store(Request $request)
@@ -36,19 +43,19 @@ class UserController extends Controller
         $tambah->id             = $id;
         $tambah->role_id        = $request->role_id;
         $tambah->pegawai_id     = $request->pegawai_id;
-        $tambah->nip            = $pegawai->nip;
+        $tambah->username       = $pegawai->nip;
         $tambah->password       = Hash::make($request->password);
         $tambah->password_teks  = $request->password;
         $tambah->status_id      = $request->status_id;
         $tambah->save();
 
-        return redirect()->route('user.show')->with('success', 'Berhasil membuat user');
+        return response()->json([ 'success' => 'Berhasil Menambah User Baru'], 200);
     }
 
-    public function show($id)
+    public function detail($id)
     {
         $user = User::where('id', $id)->first();
-        return view ('pages.user.detail', compact('user'));
+        return response()->json([ 'success' => true, 'user' => $user ], 200);
     }
 
     public function edit($id)
@@ -57,7 +64,14 @@ class UserController extends Controller
         $role    = Role::get();
         $pegawai = Pegawai::get();
         $user    = User::where('id', $id)->first();
-        return view ('pages.user.edit', compact('status','role','pegawai','user'));
+
+        return response()->json([
+            'success' => true,
+            'role'    => $role,
+            'pegawai' => $pegawai,
+            'status'  => $status,
+            'user'    => $user
+        ], 200);
     }
 
     public function update(Request $request, $id)
@@ -68,13 +82,14 @@ class UserController extends Controller
             'password_teks'  => $request->password,
             'status_id'      => $request->status_id
         ]);
-        return redirect()->route('user.show')->with('success', 'Berhasil menyimpan perubahan');
+
+        return response()->json([ 'success' => 'Berhasil Menyimpan Perubahan' ], 200);
     }
 
     public function destroy($id)
     {
         User::where('id', $id)->delete();
 
-        return redirect()->route('user.show')->with('success', 'Berhasil menghapus user');
+        return response()->json([ 'success' => 'Berhasil Menghapus Data' ], 200);
     }
 }
